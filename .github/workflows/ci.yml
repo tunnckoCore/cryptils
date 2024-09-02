@@ -1,4 +1,4 @@
-name: bunning
+name: ci
 on:
   push:
     branches:
