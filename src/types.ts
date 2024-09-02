@@ -1,4 +1,11 @@
-export type SpectreOptions = { template?: string; hash?: any; iterations?: number };
+export type SpectreOptions = {
+  template?: string;
+  hash?: any;
+  iterations?: number;
+  kdf?: 'scrypt' | 'pbkdf2' | any;
+  r?: any;
+  p?: any;
+} & Record<string, any>;
 export type SpectreResult = { secret: Uint8Array; name: string; user: string; pass: string };
 
 export type HexString = string;

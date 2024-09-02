@@ -13,6 +13,12 @@ const github = deriveAccount('exmpl', 'foo bar baz', 'github.com');
 const crypto_1 = deriveCryptoAccount('exmpl', 'foo bar baz', 'crypto.0');
 const crypto_2 = deriveCryptoAccount('exmpl', 'foo bar baz', 'crypto.1');
 const { secret: crypto_3_secret, ...crypto_3 } = spectreV4('exmpl', 'foo bar baz', 'crypto.2');
+const withScrypt = spectreV4('exmpl', 'foo bar baz', 'woho.ex', {
+  kdf: 'scrypt',
+  iterations: 2 ** 17,
+});
+
+console.log({ withScrypt });
 
 const crypto_3_keys = deriveKeys(crypto_3_secret);
 const crypto_3_keys_shares = await splitKeyToShares(crypto_3_secret, 3, 5);

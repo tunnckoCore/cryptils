@@ -5,6 +5,7 @@
 import { schnorr } from '@noble/curves/secp256k1';
 import { hmac } from '@noble/hashes/hmac';
 import { pbkdf2 } from '@noble/hashes/pbkdf2';
+import { scrypt } from '@noble/hashes/scrypt';
 import { sha256 } from '@noble/hashes/sha256';
 import { wordlist } from '@scure/bip39/wordlists/english';
 import { mask as secureMask } from 'micro-key-producer/password.js';
@@ -16,17 +17,30 @@ import { bech32encode, bytesToHex, entropyToMnemonic, hexToBytes, toBytes } from
 // optionally pass different hash (default sha256) and iterations count
 
 export function spectreV4(user: string, pass: Input, name: string, options?: SpectreOptions) {
-  const opts = { template: '111vvc-CvAvc1-cAvv1', hash: sha256, iterations: 300500, ...options };
+  const opts = {
+    template: '111vvc-CvAvc1-cAvv1',
+    hash: sha256,
+    kdf: defaultKDF,
+    iterations: 2 ** 18, // 262144
+    ...options,
+  };
 
   // N = 32768, r = 8, p = 2, dkLen = 64
   // user-key = scrypt( secret, name, N, r, p, dkLen )
-  // const userKey = scrypt(toBytes(secret), toBytes(username), { N: 2 ** 15, r: 8, p: 2, dkLen: 64 });
-  //
-  // use pbkdf2 instead of scrypt
-  const userKey = pbkdf2(opts.hash, toBytes(pass), toBytes(user), {
-    c: opts.iterations,
-    dkLen: 64,
-  });
+
+  if (opts.kdf === 'scrypt' || (opts.kdf && opts.kdf.name === 'scrypt')) {
+    opts.kdf = (_user, _pass, _opts) =>
+      scrypt(toBytes(_user), toBytes(_pass), {
+        // @ts-ignore bruh
+        N: _opts.iterations,
+        r: 8,
+        p: 2,
+        ..._opts,
+        dkLen: 64,
+      });
+  }
+
+  const userKey = opts.kdf(toBytes(user), toBytes(pass), opts);
 
   // site-key = HMAC-SHA-256( siteName + siteCounter, userKey )
   const secret = hmac(sha256, userKey, name);
@@ -35,6 +49,15 @@ export function spectreV4(user: string, pass: Input, name: string, options?: Spe
   const { password: pass_ } = secureMask(opts.template).apply(secret);
 
   return { secret, name, user, pass: pass_ } as SpectreResult;
+}
+
+export function defaultKDF(_user, _pass, _opts = {}) {
+  return pbkdf2(sha256, toBytes(_pass), toBytes(_user), {
+    // @ts-ignore bruh
+    c: _opts.iterations,
+    ..._opts,
+    dkLen: 64,
+  });
 }
 
 export function deriveAccount(user: string, pass: Input, name: string, options?: SpectreOptions) {
