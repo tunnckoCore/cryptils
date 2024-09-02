@@ -8,7 +8,7 @@
 [libera-manifesto-img]: https://badgen.net/badge/libera/manifesto/grey
 [prs-welcome-img]: https://badgen.net/badge/PRs/welcome/green?cache=300
 [prs-welcome-url]: http://makeapullrequest.com
-[last-commit-img]: https://badgen.net/github/last-commit/tunnckoCore/opensource/master?cache=300
+[last-commit-img]: https://badgen.net/github/cryptils/tunnckoCore/opensource/master?cache=300
 [last-commit-url]: https://github.com/tunnckoCore/cryptils/commits/master
 [codestyle-url]: https://github.com/airbnb/javascript
 [codestyle-img]:
