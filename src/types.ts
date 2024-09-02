@@ -4,8 +4,8 @@ export type SpectreResult = { secret: Uint8Array; name: string; user: string; pa
 export type HexString = string;
 export type Input = Uint8Array | string;
 export type SecretKey = Uint8Array | HexString;
-export type HashAlgo = 'SHA-1' | 'SHA-256' | 'SHA-384' | 'SHA-512';
-export type Token = string;
+export type HashAlgo = 'SHA-1' | 'SHA-256' | 'SHA-512' | string;
+export type TokenResult = string;
 
 export type KeysResult = {
   mnemonic: string;

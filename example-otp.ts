@@ -1,6 +1,12 @@
 import qrcode from 'qrcode';
 
-import { generateBase32Secret, getHotpToken, getTokenUri, getTotpToken } from './src/otp.ts';
+import {
+  generateBase32Secret,
+  getHotpToken,
+  getTokenUri,
+  getTotpToken,
+  validateTotpToken,
+} from './src/otp.ts';
 
 // import { bytesToHex, randomBytes } from './src/utils.ts';
 
@@ -35,3 +41,9 @@ printset({
   username: 'barry',
   issuer: 'issuer3',
 });
+
+const secret = generateBase32Secret();
+const token = await getTotpToken(secret);
+const valid = await validateTotpToken(secret, token);
+
+console.log({ secret, token, valid });

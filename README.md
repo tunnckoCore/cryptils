@@ -41,6 +41,7 @@ TypeScript, using Noble &amp; Scure cryptography by @paulmillr. Used for derivin
 - Stateless wallet/keys derivation for Ethereum, Bitcoin, Litecoin, Vertcoin, Nostr
 - Support for splitting the secret key with Shamir Secret Sharing scheme
 - AES-256-GCM encrypt/decrypt a private thing using the secret key
+- Generate and validate Two-Factor Auth (2FA) codes
 
 ## Install
 
@@ -105,15 +106,66 @@ console.log('bc1p:', bc1p, bc1p === otherKeys.bitcoin);
 
 ## Docs
 
-```typescript
-declare type Options = { template?: string; hash?: any; iterations?: number };
-declare type Result = { secret: Uint8Array; name: string; user: string; pass: string };
-declare type Hex = string;
+### Example with 2FA OTP
 
-declare type Keys = {
+```typescript
+import {
+  generateBase32Secret,
+  getHotpToken,
+  getTokenUri,
+  getTotpToken,
+  validateTotpToken,
+} from 'cryptils';
+import qrcode from 'qrcode';
+
+const secret = generateBase32Secret();
+const token = await getTotpToken(secret);
+const valid = await validateTotpToken(secret, token);
+
+console.log({ secret, token, valid });
+
+const hotpToken = await getHotpToken(secret);
+console.log({ hotpToken });
+```
+
+### Example with AES-256-GCM
+
+```typescript
+import { decryptWithSecret, encryptWithSecret } from './src/aes.ts';
+import { spectreV4 } from './src/derive.ts';
+import { randomBytes } from './src/utils.ts';
+
+const account = spectreV4('usrname', 'foo pass bar', 'twt.com');
+
+// or try with random one
+const secret = randomBytes(32);
+
+console.log({ account });
+
+const encrypted = await encryptWithSecret(account.pass, account.secret);
+const decrypted = await decryptWithSecret(encrypted, account.secret);
+
+console.log({ encrypted, decrypted, same: decrypted === account.pass });
+```
+
+````
+
+### Types
+
+```typescript
+export type SpectreOptions = { template?: string; hash?: any; iterations?: number };
+export type SpectreResult = { secret: Uint8Array; name: string; user: string; pass: string };
+
+export type HexString = string;
+export type Input = Uint8Array | string;
+export type SecretKey = Uint8Array | HexString;
+export type HashAlgo = 'SHA-1' | 'SHA-256' | 'SHA-512' | string;
+export type TokenResult = string;
+
+export type KeysResult = {
   mnemonic: string;
-  privkey: Hex;
-  pubkey: Hex;
+  privkey: HexString;
+  pubkey: HexString;
   npub: string; // npub1...abc
   nsec: string; // nsec1...abc
   nrepo: string; // nrepo1...abc
@@ -122,50 +174,7 @@ declare type Keys = {
   litecoin: string; // ltc1p...abc
   vertcoin: string; // vtc1p...abc
 };
-
-declare function spectreV4(user: string, pass: string, name: string, options?: Options): Result;
-
-declare function deriveKeys(secret: Uint8Array): Keys;
-declare function deriveMnemonic(secret: string, size?: 16 | 32): string;
-
-declare function deriveAccount(
-  user: string,
-  pass: string,
-  name: string,
-  options?: Options,
-): Omit<Result, 'secret'>;
-
-declare function deriveCryptoAccount(
-  user: string,
-  pass: string,
-  name: string,
-  options?: Options,
-): Omit<Result, 'secret'> & Keys;
-
-declare function bech32encode(
-  prefix: string,
-  key: Uint8Array | string,
-  isAddr: boolean,
-  limit: number,
-): string;
-
-declare function decryptWithSecret(ciphertext: string, key: Uint8Array | string): Promise<string>;
-declare function encryptWithSecret(
-  plaintext: Uint8Array | string,
-  key: Uint8Array | string,
-  salt?: Uint8Array,
-): Promise<string>;
-
-declare function privateKeyToEthereumAddress(key: Uint8Array | string): `0x${string}`;
-declare function checksumEthereumAddress(address: string): `0x${string}`;
-
-declare function combineSharesToKey(shares: string[]): Hex;
-declare function splitKeyToShares(
-  key: Uint8Array | string,
-  threshold: number,
-  shares: number,
-): Hex[];
-```
+````
 
 ## LICENSE
 

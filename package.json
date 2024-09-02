@@ -1,6 +1,6 @@
 {
   "name": "cryptils",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "license": "MPL-2.0",
   "description": "Utilities around Master Password Algorithm (Spectre.app, by Maarten Billemont) and crypto, using Noble and Scure by Paul Miller. Stateless accounts & passwords, 2fa HOTP/TOTP, shamir secret sharing, crypto/bitcoin/nostr public and private keys, and more.",
   "author": "Charlike Mike Reagent <opensource@tunnckocore.com>",

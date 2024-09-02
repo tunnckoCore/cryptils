@@ -1,16 +1,12 @@
 import { base32 } from '@scure/base';
 
+import type { HashAlgo, HexString, SecretKey, TokenResult } from './types.ts';
 import { randomBytes, toBytes } from './utils.ts';
-
-export type HexString = string;
-export type SecretKey = Uint8Array | HexString;
-export type HashAlgo = 'SHA-1' | 'SHA-256' | 'SHA-512' | string;
-export type Token = string;
 
 export async function getHotpToken(
   secret: SecretKey,
   options?: { algorithm?: HashAlgo; digits?: number; counter?: string | number },
-): Promise<Token> {
+): Promise<TokenResult> {
   const opts = { algorithm: 'SHA-256', digits: 6, counter: 0, ...options };
   const algorithm = normalizeAlgo(opts.algorithm);
   const digest = await createHmac(secret, hotpCounter(opts.counter), algorithm);
@@ -21,7 +17,7 @@ export async function getHotpToken(
 export async function getTotpToken(
   secret: SecretKey,
   options?: { algorithm?: HashAlgo; digits?: number; period?: number; timestamp?: number },
-): Promise<Token> {
+): Promise<TokenResult> {
   const opts = { algorithm: 'SHA-256', digits: 6, period: 30, timestamp: Date.now(), ...options };
   const algorithm = normalizeAlgo(opts.algorithm);
 
@@ -129,7 +125,7 @@ export async function createHmacDigest(key: CryptoKey, counter: Uint8Array | str
   return crypto.subtle.sign('HMAC', key, toBytes(counter));
 }
 
-export function hmacDigestToToken(hmacDigest: Uint8Array, digits = 6): Token {
+export function hmacDigestToToken(hmacDigest: Uint8Array, digits = 6): TokenResult {
   const digest = hmacDigest;
   // @ts-ignore bruh
   const offset = digest[digest.length - 1] & 0xf;
@@ -145,4 +141,52 @@ export function hmacDigestToToken(hmacDigest: Uint8Array, digits = 6): Token {
 
   const token = binary % Math.pow(10, digits);
   return String(token).padStart(digits, '0');
+}
+
+/**
+ * Validate HOTP/TOTP token, defaults to HOTP
+
+ * @param secret secret
+ * @param token token
+ * @param timestamp optional, timestamp used for deterministic unit tests (defaults to current timestamp)
+ * @returns boolean
+ */
+export async function validateToken(
+  secret: string,
+  token: string,
+  options: {
+    algorithm?: HashAlgo;
+    digits?: number;
+    counter?: string | number;
+    timestamp?: number;
+  } = { counter: 0 },
+) {
+  if (!/[0-9]/g.test(token)) {
+    return false;
+  }
+
+  const getToken = options.timestamp ? getTotpToken : getHotpToken;
+  const tkn = await getToken(secret, options);
+
+  return tkn === String(token);
+}
+
+export function validateHotpToken(secret, token, options = {}) {
+  const opts = { counter: 0, ...options };
+
+  // force HMAC-based method
+  // @ts-ignore bruh
+  delete opts?.timestamp;
+
+  return validateToken(secret, token, opts);
+}
+
+export function validateTotpToken(secret, token, options = {}) {
+  const opts = { timestamp: Date.now(), ...options };
+
+  // force Time-TOP method
+  // @ts-ignore bruh
+  delete opts?.counter;
+
+  return validateToken(secret, token, opts);
 }
