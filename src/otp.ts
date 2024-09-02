@@ -1,30 +1,96 @@
-import { toBytes } from './utils.ts';
+import { base32 } from '@scure/base';
+
+import { randomBytes, toBytes } from './utils.ts';
 
 export type HexString = string;
 export type SecretKey = Uint8Array | HexString;
-export type HashAlgo = 'SHA-1' | 'SHA-256' | 'SHA-384' | 'SHA-512';
+export type HashAlgo = 'SHA-1' | 'SHA-256' | 'SHA-512' | string;
 export type Token = string;
 
-export async function hotp(
+export async function getHotpToken(
   secret: SecretKey,
-  options?: { algo?: HashAlgo; digits?: number; counter?: string | number },
+  options?: { algorithm?: HashAlgo; digits?: number; counter?: string | number },
 ): Promise<Token> {
-  const opts = { digits: 6, counter: 0, ...options };
-  const digest = await createHmac(secret, hotpCounter(opts.counter), opts.algo);
+  const opts = { algorithm: 'SHA-256', digits: 6, counter: 0, ...options };
+  const algorithm = normalizeAlgo(opts.algorithm);
+  const digest = await createHmac(secret, hotpCounter(opts.counter), algorithm);
 
   return hmacDigestToToken(digest, opts.digits);
 }
 
-export async function totp(
+export async function getTotpToken(
   secret: SecretKey,
-  options?: { algo?: HashAlgo; digits?: number; period?: number; timestamp?: number },
+  options?: { algorithm?: HashAlgo; digits?: number; period?: number; timestamp?: number },
 ): Promise<Token> {
-  const opts = { algo: 'SHA-256', digits: 6, period: 30, timestamp: Date.now(), ...options };
-  const algo = opts.algo.toUpperCase().replace('-', '').replace('SHA', 'SHA-') as HashAlgo;
+  const opts = { algorithm: 'SHA-256', digits: 6, period: 30, timestamp: Date.now(), ...options };
+  const algorithm = normalizeAlgo(opts.algorithm);
 
-  return hotp(secret, { ...opts, algo, counter: totpCounter(opts.period, opts.timestamp) });
-  // const digest = await createHmac(secret, totpCounter(opts.period, opts.timestamp), opts.algo);
-  // return hmacDigestToToken(digest, opts.digits);
+  return getHotpToken(secret, {
+    ...opts,
+    algorithm,
+    counter: totpCounter(opts.period, opts.timestamp),
+  });
+}
+
+export function generateBase32Secret(secret?: Uint8Array) {
+  return base32.encode(secret || randomBytes(32)).slice(0, 24);
+
+  // or basic/standalone version
+  // RFC 4648 base32 alphabet without pad
+  // const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  // return randomBytes(size).reduce(
+  //   (acc, value) => acc + BASE32_ALPHABET[Math.floor((value * BASE32_ALPHABET.length) / 256)],
+  //   '',
+  // );
+}
+
+function normalizeAlgo(algo: HashAlgo) {
+  return algo.toUpperCase().replace('-', '').replace('SHA', 'SHA-') as HashAlgo;
+}
+
+/**
+ * Generate OTP URI
+ * See https://github.com/google/google-authenticator/wiki/Key-Uri-Format
+ *
+ * @param label label
+ * @param username username
+ * @param secret secret
+ * @param issuer issuer
+ * @returns URI
+ */
+export function getTokenUri(secret: string, options = {}) {
+  const opts = {
+    secret,
+    label: 'alice2',
+    username: '',
+    issuer: 'myapp',
+    algorithm: 'SHA-256',
+    digits: 6, // force 6, cuz buggy when another
+    period: 30,
+    ...options,
+  };
+
+  opts.algorithm = normalizeAlgo(opts.algorithm).replace('-', '');
+
+  const { label, username, ...rest } = opts;
+
+  const params = new URLSearchParams(
+    Object.entries(rest).map(([key, value]) => [
+      key.toLowerCase(),
+      encodeURIComponent(String(value)),
+    ]),
+  );
+
+  if (!params.get('issuer')) {
+    params.delete('issuer');
+  }
+
+  if (!params.get('username')) {
+    params.delete('username');
+  }
+
+  const url = `otpauth://totp/${encodeURIComponent(label)}${username ? ':' + encodeURIComponent(username) : ''}?`;
+  return url + params.toString();
 }
 
 export function hotpCounter(counter: string | number): HexString {
@@ -39,15 +105,17 @@ export function totpCounter(period = 30, timestamp = Date.now()) {
 export async function createHmac(
   secret: SecretKey,
   counter: Uint8Array | string = '0',
-  algo: HashAlgo = 'SHA-256',
+  algorithm: HashAlgo = 'SHA-256',
 ): Promise<Uint8Array> {
+  const algo = normalizeAlgo(algorithm);
   const key = await createHmacKey(secret, algo);
   const digest = await createHmacDigest(key, counter);
 
   return new Uint8Array(digest);
 }
 
-export async function createHmacKey(secret: SecretKey, algo: HashAlgo = 'SHA-256') {
+export async function createHmacKey(secret: SecretKey, algorithm: HashAlgo = 'SHA-256') {
+  const algo = normalizeAlgo(algorithm);
   return await crypto.subtle.importKey(
     'raw',
     typeof secret === 'string' ? toBytes(secret) : secret,
