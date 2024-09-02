@@ -20,6 +20,7 @@ TypeScript, using Noble &amp; Scure cryptography by @paulmillr. Used for derivin
 ```
 npm add cryptils
 bun add cryptils
+deno add npm:cryptils
 ```
 
 ## Usage
