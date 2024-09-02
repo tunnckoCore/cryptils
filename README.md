@@ -2,13 +2,17 @@
 
 [npmv-url]: https://www.npmjs.com/package/cryptils
 [npmv-img]: https://badgen.net/npm/v/cryptils?icon=npm&cache=300
-[license-url]: https://github.com/tunnckoCore/cryptils/blob/master/LICENSE
+[license-url]: https://github.com/tunnckoCore/cryptils/blob/master/LICENSE.md
 [license-img]: https://badgen.net/npm/license/cryptils?cache=300
 [libera-manifesto-url]: https://liberamanifesto.com
 [libera-manifesto-img]: https://badgen.net/badge/libera/manifesto/grey
+[nostr-ready-url]: https://nostr.com
+[nostr-ready-img]: https://badgen.net/badge/nostr/ready/purple
+[bitcoin-ready-url]: https://bitcoin.org
+[bitcoin-ready-img]: https://badgen.net/badge/bitcoin/ready/orange
 [prs-welcome-img]: https://badgen.net/badge/PRs/welcome/green?cache=300
 [prs-welcome-url]: http://makeapullrequest.com
-[last-commit-img]: https://badgen.net/github/tunnckoCore/cryptils/opensource/master?cache=300
+[last-commit-img]: https://badgen.net/github/last-commit/tunnckoCore/cryptils
 [last-commit-url]: https://github.com/tunnckoCore/cryptils/commits/master
 [codestyle-url]: https://github.com/airbnb/javascript
 [codestyle-img]:
@@ -16,6 +20,8 @@
 
 [![Code style][codestyle-img]][codestyle-url]
 [![bunning](https://github.com/tunnckoCore/cryptils/actions/workflows/ci.yml/badge.svg)](https://github.com/tunnckoCore/cryptils/actions/workflows/ci.yml)
+[![bitcoin ready][bitcoin-ready-img]][bitcoin-ready-url]
+[![nostr ready][nostr-ready-img]][nostr-ready-url]
 [![Make A Pull Request][prs-welcome-img]][prs-welcome-url]
 [![Time Since Last Commit][last-commit-img]][last-commit-url]
 
