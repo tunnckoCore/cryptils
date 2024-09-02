@@ -33,15 +33,18 @@ TypeScript, using Noble &amp; Scure cryptography by @paulmillr. Used for derivin
 
 - Don't store, derive! Derive passwords and keys from a master password and a name
 - Cloud-less & storage-less password manager, stateless password derivation
-- Uses audited Noble & Scure cryptography by [@paulmillr](//github.com/paulmillr)
-- TypeScript implementation of [Spectre](https://spectre.app) /
+- Uses **only** audited Noble & Scure cryptography by [@paulmillr](//github.com/paulmillr)
+- TypeScript implementation of [Spectre.app](https://spectre.app) /
   [Master Password Algorithm](<https://en.wikipedia.org/wiki/Master_Password_(algorithm)>) by
   [Maarten Billemont](https://twitter.com/lhunath)
 - Stateless account & password derivation - no need to store anything
 - Stateless wallet/keys derivation for Ethereum, Bitcoin, Litecoin, Vertcoin, Nostr
 - Support for splitting the secret key with Shamir Secret Sharing scheme
 - AES-256-GCM encrypt/decrypt a private thing using the secret key
-- Generate and validate Two-Factor Auth (2FA) codes
+- Generate and validate 2FA tokens (HOTP & TOTP)
+  - RFC 4226 & RFC 6238
+  - support `SHA-1`, `SHA-256`, `SHA-512` hashing algorithms
+  - support different digits length, up to 10
 
 ## Install
 
