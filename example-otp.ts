@@ -5,6 +5,7 @@ import {
   getHotpToken,
   getTokenUri,
   getTotpToken,
+  validateHotpToken,
   validateTotpToken,
 } from './src/otp.ts';
 
@@ -47,3 +48,6 @@ const token = await getTotpToken(secret);
 const valid = await validateTotpToken(secret, token);
 
 console.log({ secret, token, valid });
+
+const hotpToken = await getHotpToken(secret);
+console.log({ hotpToken, valid: await validateHotpToken(secret, hotpToken) });

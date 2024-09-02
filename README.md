@@ -114,6 +114,8 @@ import {
   getHotpToken,
   getTokenUri,
   getTotpToken,
+  validateHotpToken,
+  validateToken,
   validateTotpToken,
 } from 'cryptils';
 import qrcode from 'qrcode';
@@ -125,7 +127,7 @@ const valid = await validateTotpToken(secret, token);
 console.log({ secret, token, valid });
 
 const hotpToken = await getHotpToken(secret);
-console.log({ hotpToken });
+console.log({ hotpToken, valid: await validateHotpToken(secret, hotpToken) });
 ```
 
 ### Example with AES-256-GCM
@@ -147,8 +149,6 @@ const decrypted = await decryptWithSecret(encrypted, account.secret);
 
 console.log({ encrypted, decrypted, same: decrypted === account.pass });
 ```
-
-````
 
 ### Types
 
@@ -174,7 +174,7 @@ export type KeysResult = {
   litecoin: string; // ltc1p...abc
   vertcoin: string; // vtc1p...abc
 };
-````
+```
 
 ## LICENSE
 
