@@ -1,4 +1,23 @@
-# cryptils
+# cryptils [![npm version][npmv-img]][npmv-url] [![License][license-img]][license-url] [![Libera Manifesto][libera-manifesto-img]][libera-manifesto-url]
+
+[npmv-url]: https://www.npmjs.com/package/cryptils
+[npmv-img]: https://badgen.net/npm/v/cryptils?icon=npm&cache=300
+[license-url]: https://github.com/tunnckoCore/cryptils/blob/master/LICENSE
+[license-img]: https://badgen.net/npm/license/cryptils?cache=300
+[libera-manifesto-url]: https://liberamanifesto.com
+[libera-manifesto-img]: https://badgen.net/badge/libera/manifesto/grey
+[prs-welcome-img]: https://badgen.net/badge/PRs/welcome/green?cache=300
+[prs-welcome-url]: http://makeapullrequest.com
+[last-commit-img]: https://badgen.net/github/last-commit/tunnckoCore/opensource/master?cache=300
+[last-commit-url]: https://github.com/tunnckoCore/opensource/commits/master
+[codestyle-url]: https://github.com/airbnb/javascript
+[codestyle-img]:
+  https://badgen.net/badge/code%20style/airbnb%20%2B%20prettier/ff5a5f?icon=airbnb&cache=300
+
+[![Code style][codestyle-img]][codestyle-url]
+[![bunning](https://github.com/tunnckoCore/cryptils/actions/workflows/bunning.yml/badge.svg)](https://github.com/tunnckoCore/cryptils/actions/workflows/bunning.yml)
+[![Make A Pull Request][prs-welcome-img]][prs-welcome-url]
+[![Time Since Last Commit][last-commit-img]][last-commit-url]
 
 Utilities around Spectre / Master Password Algorithm (by Maarten Billemont), implemented in
 TypeScript, using Noble &amp; Scure cryptography by @paulmillr. Used for deriving stateless accounts
