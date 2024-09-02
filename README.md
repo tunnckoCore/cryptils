@@ -1,7 +1,7 @@
 # cryptils [![npm version][npmv-img]][npmv-url] [![License][license-img]][license-url] [![Libera Manifesto][libera-manifesto-img]][libera-manifesto-url]
 
 [npmv-url]: https://www.npmjs.com/package/cryptils
-[npmv-img]: https://badgen.net/npm/v/cryptils?icon=npm&cache=300
+[npmv-img]: https://badgen.net/npm/v/cryptils?icon=npm
 [license-url]: https://github.com/tunnckoCore/cryptils/blob/master/LICENSE.md
 [license-img]: https://badgen.net/npm/license/cryptils?cache=300
 [libera-manifesto-url]: https://liberamanifesto.com
