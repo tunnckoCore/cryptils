@@ -15,7 +15,7 @@
   https://badgen.net/badge/code%20style/airbnb%20%2B%20prettier/ff5a5f?icon=airbnb&cache=300
 
 [![Code style][codestyle-img]][codestyle-url]
-[![bunning](https://github.com/tunnckoCore/cryptils/actions/workflows/bunning.yml/badge.svg)](https://github.com/tunnckoCore/cryptils/actions/workflows/bunning.yml)
+[![bunning](https://github.com/tunnckoCore/cryptils/actions/workflows/ci.yml/badge.svg)](https://github.com/tunnckoCore/cryptils/actions/workflows/ci.yml)
 [![Make A Pull Request][prs-welcome-img]][prs-welcome-url]
 [![Time Since Last Commit][last-commit-img]][last-commit-url]
 
