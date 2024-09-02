@@ -6,7 +6,7 @@ import {
   randomBytes,
   spectreV4,
   splitKeyToShares,
-} from './index.ts';
+} from './src/index.ts';
 
 const twitter = deriveAccount('exmpl', 'foo bar baz', 'twitter.com');
 const github = deriveAccount('exmpl', 'foo bar baz', 'github.com');
@@ -34,4 +34,4 @@ const otherKeys = deriveKeys(rndSecret);
 console.log('other keys:', otherKeys);
 
 const bc1p = bech32encode('bc', otherKeys.pubkey, true);
-console.log('bech32:', bc1p, bc1p === otherKeys.bitcoin);
+console.log('bc1p:', bc1p, bc1p === otherKeys.bitcoin);
