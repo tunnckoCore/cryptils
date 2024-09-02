@@ -7,8 +7,9 @@ TypeScript, using Noble &amp; Scure cryptography by @paulmillr. Used for derivin
 ## Highlights
 
 - Uses audited Noble & Scure cryptography by [@paulmillr](//github.com/paulmillr)
-- TypeScript implementation of [Spectre / Master Password Algorithm](https://spectre.app) by Maarten
-  Billemont
+- TypeScript implementation of [Spectre](https://spectre.app) /
+  [Master Password Algorithm](<https://en.wikipedia.org/wiki/Master_Password_(algorithm)>) by
+  [Maarten Billemont](https://twitter.com/lhunath)
 - Stateless account & password derivation
 - Stateless Crypto, Bitcoin, Nostr public and private keys derivation
 - Support for Shamir Secret Sharing
