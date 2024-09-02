@@ -1,4 +1,10 @@
 name: bunning
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
 jobs:
   my-job:
     name: build & test
