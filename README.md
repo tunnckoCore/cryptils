@@ -44,7 +44,7 @@ TypeScript, using Noble &amp; Scure cryptography by @paulmillr. Used for derivin
 - Generate and validate 2FA tokens (HOTP & TOTP)
   - RFC 4226 & RFC 6238
   - support `SHA-1`, `SHA-256`, `SHA-512` hashing algorithms
-  - support different digits length, up to 10
+  - support different digits lengths, up to 10
 
 ## Install
 
@@ -136,9 +136,9 @@ console.log({ hotpToken, valid: await validateHotpToken(secret, hotpToken) });
 ### Example with AES-256-GCM
 
 ```typescript
-import { decryptWithSecret, encryptWithSecret } from './src/aes.ts';
-import { spectreV4 } from './src/derive.ts';
-import { randomBytes } from './src/utils.ts';
+import { decryptWithSecret, encryptWithSecret } from 'cryptils/aes';
+import { spectreV4 } from 'cryptils/derive';
+import { randomBytes } from 'cryptils/utils';
 
 const account = spectreV4('usrname', 'foo pass bar', 'twt.com');
 
