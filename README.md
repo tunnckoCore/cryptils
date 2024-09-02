@@ -6,6 +6,7 @@ TypeScript, using Noble &amp; Scure cryptography by @paulmillr. Used for derivin
 
 ## Highlights
 
+- Don't store, derive! Derive passwords and keys from a master password and a name
 - Uses audited Noble & Scure cryptography by [@paulmillr](//github.com/paulmillr)
 - TypeScript implementation of [Spectre](https://spectre.app) /
   [Master Password Algorithm](<https://en.wikipedia.org/wiki/Master_Password_(algorithm)>) by
@@ -17,7 +18,8 @@ TypeScript, using Noble &amp; Scure cryptography by @paulmillr. Used for derivin
 ## Install
 
 ```
-npm install cryptils
+npm add cryptils
+bun add cryptils
 ```
 
 ## Usage
