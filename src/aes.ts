@@ -21,11 +21,15 @@ export async function encryptWithSecret(
   return ciphertext;
 }
 
-export function decryptWithSecret(ciphertext: string, key: Uint8Array | string): Promise<string>;
-export async function decryptWithSecret(ciphertext, key) {
-  const [_algo, salt, data] = ciphertext.split('_');
-  const secret = typeof key === 'string' ? hexToBytes(key) : key;
-  const cipher = gcm(secret, hexToBytes(salt));
+export async function decryptWithSecret(
+  ciphertext: string,
+  key: Uint8Array | string,
+): Promise<string> {
+  const startIndex = ciphertext.indexOf('_');
+  const endIndex = ciphertext.lastIndexOf('_');
+  const salt = ciphertext.slice(startIndex + 1, endIndex);
+  const data = ciphertext.slice(endIndex + 1);
+  const cipher = gcm(toBytes(key), toBytes(salt));
 
   return new TextDecoder('utf-8').decode(await cipher.decrypt(hexToBytes(data)));
 }

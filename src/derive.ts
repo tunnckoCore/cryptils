@@ -12,7 +12,7 @@ import { mask as secureMask } from 'micro-key-producer/password.js';
 
 import { privateKeyToEthereumAddress } from './ethereum.ts';
 import type { KeysResult, SpectreOptions, SpectreResult } from './types.ts';
-import { bech32encode, bytesToHex, entropyToMnemonic, hexToBytes, toBytes } from './utils.ts';
+import { bech32encode, bytesToHex, entropyToMnemonic, toBytes } from './utils.ts';
 
 // optionally pass different hash (default sha256) and iterations count
 
@@ -117,9 +117,10 @@ export function deriveKeys(secret: Uint8Array | string): KeysResult {
 }
 
 export function deriveMnemonic(secret: Uint8Array | string, size = 32, wordlist_ = wordlist) {
-  if (typeof secret === 'string') {
-    secret = hexToBytes(secret);
-  }
+  // if hexstring, convert to bytes
+  // if string (utf8), convert to bytes
+  // if bytes, passthrough
+  secret = toBytes(secret);
 
   if (secret.length !== 16 && secret.length !== 32) {
     throw new Error('Invalid entropy length: 16 or 32 bytes');
