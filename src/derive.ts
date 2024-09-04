@@ -11,16 +11,21 @@ import { wordlist } from '@scure/bip39/wordlists/english';
 import { mask as secureMask } from 'micro-key-producer/password.js';
 
 import { privateKeyToEthereumAddress } from './ethereum.ts';
-import type { Input, KeysResult, SpectreOptions, SpectreResult } from './types.ts';
+import type { KeysResult, SpectreOptions, SpectreResult } from './types.ts';
 import { bech32encode, bytesToHex, entropyToMnemonic, hexToBytes, toBytes } from './utils.ts';
 
 // optionally pass different hash (default sha256) and iterations count
 
-export function spectreV4(user: string, pass: Input, name: string, options?: SpectreOptions) {
+export function spectreV4(
+  user: Uint8Array | string,
+  pass: Uint8Array | string,
+  name: string,
+  options?: SpectreOptions,
+) {
   const opts = {
     template: '111vvc-CvAvc1-cAvv1',
     hash: sha256,
-    kdf: defaultKDF,
+    kdf: defaultKdfFnPBKDF2,
     iterations: 2 ** 18, // 262144
     ...options,
   };
@@ -28,19 +33,14 @@ export function spectreV4(user: string, pass: Input, name: string, options?: Spe
   // N = 32768, r = 8, p = 2, dkLen = 64
   // user-key = scrypt( secret, name, N, r, p, dkLen )
 
+  // @ts-ignore bruh
   if (opts.kdf === 'scrypt' || (opts.kdf && opts.kdf.name === 'scrypt')) {
-    opts.kdf = (_user, _pass, _opts) =>
-      scrypt(toBytes(_user), toBytes(_pass), {
-        // @ts-ignore bruh
-        N: _opts.iterations,
-        r: 8,
-        p: 2,
-        ..._opts,
-        dkLen: 64,
-      });
+    opts.kdf = defaultScryptFn;
+  } else if (opts.kdf === 'pbkdf2' || (opts.kdf && opts.kdf.name === 'pbkdf2')) {
+    opts.kdf = defaultKdfFnPBKDF2;
   }
 
-  const userKey = opts.kdf(toBytes(user), toBytes(pass), opts);
+  const userKey = opts.kdf(toBytes(pass), toBytes(user), opts);
 
   // site-key = HMAC-SHA-256( siteName + siteCounter, userKey )
   const secret = hmac(sha256, userKey, name);
@@ -51,8 +51,21 @@ export function spectreV4(user: string, pass: Input, name: string, options?: Spe
   return { secret, name, user, pass: pass_ } as SpectreResult;
 }
 
-export function defaultKDF(_user, _pass, _opts = {}) {
-  return pbkdf2(sha256, toBytes(_pass), toBytes(_user), {
+// salt/user is kdf salt, key/pass is kdf key
+function defaultScryptFn(key, salt, _opts = {}) {
+  return scrypt(toBytes(key), toBytes(salt), {
+    // @ts-ignore bruh
+    N: _opts.iterations,
+    r: 8,
+    p: 1,
+    ..._opts,
+    dkLen: 64,
+  });
+}
+
+// salt/user is kdf salt, key/pass is kdf key
+function defaultKdfFnPBKDF2(key, salt, _opts = {}) {
+  return pbkdf2(sha256, toBytes(key), toBytes(salt), {
     // @ts-ignore bruh
     c: _opts.iterations,
     ..._opts,
@@ -60,15 +73,20 @@ export function defaultKDF(_user, _pass, _opts = {}) {
   });
 }
 
-export function deriveAccount(user: string, pass: Input, name: string, options?: SpectreOptions) {
+export function deriveAccount(
+  user: Uint8Array | string,
+  pass: Uint8Array | string,
+  name: string,
+  options?: SpectreOptions,
+) {
   const { secret, ...account } = spectreV4(user, pass, name, options);
 
   return account as Omit<SpectreResult, 'secret'>;
 }
 
 export function deriveCryptoAccount(
-  user: string,
-  pass: Input,
+  user: Uint8Array | string,
+  pass: Uint8Array | string,
   name: string,
   options?: SpectreOptions,
 ) {
@@ -78,7 +96,7 @@ export function deriveCryptoAccount(
   return { ...account, keys } as Omit<SpectreResult, 'secret'> & { keys: KeysResult };
 }
 
-export function deriveKeys(secret: Input): KeysResult {
+export function deriveKeys(secret: Uint8Array | string): KeysResult {
   const mnemonic = deriveMnemonic(secret);
   const privkey = bytesToHex(toBytes(secret));
   const pubkey = schnorr.getPublicKey(secret);
@@ -98,7 +116,7 @@ export function deriveKeys(secret: Input): KeysResult {
   };
 }
 
-export function deriveMnemonic(secret: Input, size = 32, wordlist_ = wordlist) {
+export function deriveMnemonic(secret: Uint8Array | string, size = 32, wordlist_ = wordlist) {
   if (typeof secret === 'string') {
     secret = hexToBytes(secret);
   }

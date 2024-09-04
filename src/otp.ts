@@ -100,7 +100,7 @@ export function totpCounter(period = 30, timestamp = Date.now()) {
 
 export async function createHmac(
   secret: SecretKey,
-  counter: Uint8Array | string = '0',
+  counter: number | string = 0,
   algorithm: HashAlgo = 'SHA-256',
 ): Promise<Uint8Array> {
   const algo = normalizeAlgo(algorithm);
@@ -121,8 +121,8 @@ export async function createHmacKey(secret: SecretKey, algorithm: HashAlgo = 'SH
   );
 }
 
-export async function createHmacDigest(key: CryptoKey, counter: Uint8Array | string) {
-  return crypto.subtle.sign('HMAC', key, toBytes(counter));
+export async function createHmacDigest(key: CryptoKey, counter: number | string) {
+  return crypto.subtle.sign('HMAC', key, toBytes(String(counter)));
 }
 
 export function hmacDigestToToken(hmacDigest: Uint8Array, digits = 6): TokenResult {

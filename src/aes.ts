@@ -1,9 +1,13 @@
 import { gcm } from '@noble/ciphers/webcrypto';
 
-import type { Input, SecretKey } from './types.ts';
+import type { SecretKey } from './types.ts';
 import { bytesToHex, hexToBytes, randomBytes, toBytes } from './utils.ts';
 
-export async function encryptWithSecret(plaintext: Input, key: SecretKey, salt?: Uint8Array) {
+export async function encryptWithSecret(
+  plaintext: Uint8Array | string,
+  key: SecretKey,
+  salt?: Uint8Array,
+) {
   const secret = typeof key === 'string' ? hexToBytes(key).slice(1) : key;
   const salt_ = salt ? toBytes(salt) : randomBytes(32);
   const cipher = gcm(secret, salt_);
