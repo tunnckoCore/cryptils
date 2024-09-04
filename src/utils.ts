@@ -23,7 +23,7 @@ export function isHex(str: string) {
 
   const val = str.replace(/\s/g, '');
 
-  if (/[0-9a-fA-F]*/gim.test(val) && val.length % 2 === 0) {
+  if (/^[0-9a-fA-F]*$/.test(val) && val.length % 2 === 0) {
     return true;
   }
 

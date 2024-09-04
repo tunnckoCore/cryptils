@@ -1,10 +1,9 @@
 import { pbkdf2 } from '@noble/hashes/pbkdf2';
 import { scrypt } from '@noble/hashes/scrypt';
-import { sha256 } from '@noble/hashes/sha256';
 
 import { decryptWithSecret, encryptWithSecret } from './src/aes.ts';
 import { spectreV4 } from './src/derive.ts';
-import { randomBytes, toBytes } from './src/utils.ts';
+import { randomBytes } from './src/utils.ts';
 
 const account = spectreV4('usrname', 'foo pass bar', 'twt.com');
 
