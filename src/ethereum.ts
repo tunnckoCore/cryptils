@@ -1,8 +1,6 @@
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { keccak_256 } from '@noble/hashes/sha3';
-import type { Input } from '@noble/hashes/utils';
-
-import { bytesToHex } from './utils.ts';
+import { bytesToHex, type Input } from '@noble/hashes/utils';
 
 export function privateKeyToEthereumAddress(key: Input): `0x${string}` {
   const publicKey = secp256k1.getPublicKey(key, false).slice(1);

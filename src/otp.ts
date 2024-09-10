@@ -1,7 +1,8 @@
+import { randomBytes } from '@noble/hashes/utils';
 import { base32 } from '@scure/base';
 
 import type { HashAlgo, HexString, SecretKey, TokenResult } from './types.ts';
-import { randomBytes, toBytes } from './utils.ts';
+import { toBytes } from './utils.ts';
 
 export async function getHotpToken(
   secret: SecretKey,

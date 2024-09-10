@@ -1,6 +1,6 @@
 {
   "name": "cryptils",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "license": "MPL-2.0",
   "description": "Utilities around Master Password Algorithm (Spectre.app, by Maarten Billemont) and crypto, using Noble and Scure by Paul Miller. Stateless accounts & passwords, 2fa HOTP/TOTP, shamir secret sharing, crypto/bitcoin/nostr public and private keys, and more.",
   "author": "Charlike Mike Reagent <opensource@tunnckocore.com>",
@@ -18,6 +18,8 @@
     ".": "./dist/index.js",
     "./index.js": "./dist/index.js",
     "./aes": "./dist/aes.js",
+    "./age": "./dist/age.js",
+    "./bech32encode": "./dist/bech32encode.js",
     "./derive": "./dist/derive.js",
     "./ethereum": "./dist/ethereum.js",
     "./otp": "./dist/otp.js",
@@ -34,8 +36,10 @@
     "dist"
   ],
   "scripts": {
-    "build": "bun run build:aes && bun run build:derive && bun run build:ethereum && bun run build:index && bun run build:otp && bun run build:shamir && bun run build:utils",
+    "build": "bun run build:aes && bun run build:age && bun run build:bech32encode && bun run build:derive && bun run build:ethereum && bun run build:index && bun run build:otp && bun run build:shamir && bun run build:utils",
     "build:aes": "bun build src/aes.ts --outdir dist --packages=external",
+    "build:age": "bun build src/age.ts --outdir dist --packages=external",
+    "build:bech32encode": "bun build src/bech32encode.ts --outdir dist --packages=external",
     "build:derive": "bun build src/derive.ts --outdir dist --packages=external",
     "build:ethereum": "bun build src/ethereum.ts --outdir dist --packages=external",
     "build:index": "bun build src/index.ts --outdir dist --packages=external",

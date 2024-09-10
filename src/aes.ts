@@ -1,7 +1,8 @@
 import { gcm } from '@noble/ciphers/webcrypto';
+import { bytesToHex, hexToBytes, randomBytes } from '@noble/hashes/utils';
 
 import type { SecretKey } from './types.ts';
-import { bytesToHex, hexToBytes, randomBytes, toBytes } from './utils.ts';
+import { toBytes } from './utils.ts';
 
 export async function encryptWithSecret(
   plaintext: Uint8Array | string,

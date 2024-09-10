@@ -1,7 +1,7 @@
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
 import { combine as combineKey, split as splitKey } from 'shamir-secret-sharing';
 
 import type { HexString } from './types.ts';
-import { bytesToHex, hexToBytes } from './utils.ts';
 
 export async function splitKeyToShares(
   key: Uint8Array | string,

@@ -1,21 +1,22 @@
-// Master Password Algorithm (by Maarten Billemont),
-// his latest version on Spectre.app is V3(2015:01)
-// while this one is using PBKDF2 instead of Scrypt,
-
 import { schnorr } from '@noble/curves/secp256k1';
 import { hmac } from '@noble/hashes/hmac';
 import { pbkdf2 } from '@noble/hashes/pbkdf2';
 import { scrypt } from '@noble/hashes/scrypt';
 import { sha256 } from '@noble/hashes/sha256';
+import { bytesToHex } from '@noble/hashes/utils';
+import { entropyToMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 import { mask as secureMask } from 'micro-key-producer/password.js';
 
+import { bech32encode } from './bech32encode.ts';
 import { privateKeyToEthereumAddress } from './ethereum.ts';
 import type { KeysResult, SpectreOptions, SpectreResult } from './types.ts';
-import { bech32encode, bytesToHex, entropyToMnemonic, toBytes } from './utils.ts';
+import { toBytes } from './utils.ts';
 
+// Master Password Algorithm (by Maarten Billemont),
+// his latest version on Spectre.app is V3(2015:01)
+// It can use either Scrypt or PBKDF2 as KDF,
 // optionally pass different hash (default sha256) and iterations count
-
 export function spectreV4(
   user: Uint8Array | string,
   pass: Uint8Array | string,
