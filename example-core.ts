@@ -1,9 +1,10 @@
+import { randomBytes } from '@noble/hashes/utils';
+
+import { bech32encode } from './src/bech32encode.ts';
 import {
-  bech32encode,
   deriveAccount,
   deriveCryptoAccount,
   deriveKeys,
-  randomBytes,
   spectreV4,
   splitKeyToShares,
 } from './src/index.ts';
