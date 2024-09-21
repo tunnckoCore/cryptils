@@ -50,7 +50,7 @@ export function spectreV4(
   // password = passwordMask( template, siteKey )
   const { password: pass_ } = secureMask(opts.template).apply(secret);
 
-  return { secret, account: name, persona: user, masterpass: pass_ } as SpectreResult;
+  return { secret, account: name, persona: user, securepass: pass_ } as SpectreResult;
 }
 
 // salt/user is kdf salt, key/pass is kdf key

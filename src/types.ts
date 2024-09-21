@@ -18,7 +18,7 @@ export type SpectreResult = {
   secret: Uint8Array;
   account: string;
   persona: string;
-  masterpass: string;
+  securepass: string;
 };
 
 export type HexString = string;
