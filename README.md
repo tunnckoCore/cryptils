@@ -65,7 +65,7 @@ const keys = deriveCryptoKeys(wgw.secret);
 
 console.log('privkey', bytesToHex(wgw.secret));
 console.log('wiggle account:', wgw);
-// => { secret: uint8array, persona: string, masterpass: string, account: string }
+// => { secret: uint8array, persona: string, securepass: string, account: string }
 
 console.log('crypto keys:', keys);
 // => { bitcoin, nostr, ethereum, litecoin, vertcoin }
