@@ -4,7 +4,7 @@ import { hmac } from '@noble/hashes/hmac';
 import { pbkdf2 } from '@noble/hashes/pbkdf2';
 import { scrypt } from '@noble/hashes/scrypt';
 import { sha256 } from '@noble/hashes/sha256';
-import { bytesToHex, randomBytes } from '@noble/hashes/utils';
+import { bytesToHex } from '@noble/hashes/utils';
 import { entropyToMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 import { mask as secureMask } from 'micro-key-producer/password.js';
@@ -77,23 +77,27 @@ function defaultKdfFnPBKDF2(key, salt, _opts = {}) {
 
 // used to derive all kinds of keys, including Nostr, Ethereum, Bitcoin, Litecoin, Vertcoin
 // for lower-level you can use deriveKey directly or the Nostr, Ethereum, Bitcoin specific ones.
-export function deriveCryptoKeys(secret: Uint8Array | string, kdf = defaultKdfFnPBKDF2) {
-  // const mnemonic = deriveMnemonic(secret);
-  // const privkey = bytesToHex(toBytes(secret));
-  const salt = ed25519.getPublicKey(toBytes(secret));
-
+export function deriveCryptoKeys(
+  secretKey: Uint8Array | HexString,
+  saltKey = ed25519.getPublicKey(toBytes(secretKey)),
+  kdfFn = defaultKdfFnPBKDF2,
+) {
   return {
-    nostr: deriveNostrKeys(secret, salt, kdf),
-    ethereum: deriveEthereumKeys(secret, salt, kdf),
-    bitcoin: deriveBitcoinKeys(secret, kdf),
-    litecoin: deriveKey('ltc', secret, salt, true, kdf),
-    vertcoin: deriveKey('vtc', secret, salt, true, kdf),
+    nostr: deriveNostrKeys(secretKey, saltKey, kdfFn),
+    ethereum: deriveEthereumKeys(secretKey, saltKey, kdfFn),
+    bitcoin: deriveBitcoinKeys(secretKey, saltKey, kdfFn),
+    litecoin: deriveKey('ltc', secretKey, saltKey, true, kdfFn),
+    vertcoin: deriveKey('vtc', secretKey, saltKey, true, kdfFn),
   };
 }
 
-export function deriveNostrKeys(secret, pubkey = randomBytes(32), kdf = defaultKdfFnPBKDF2) {
-  // we derive a general Nostr secret key (uint8array) and pubkey
-  const nostr = deriveKey('nostr', secret, pubkey, false, kdf) as DeriveKeyResult & {
+export function deriveNostrKeys(
+  secretKey: Uint8Array | HexString,
+  saltKey = ed25519.getPublicKey(toBytes(secretKey)),
+  kdfFn = defaultKdfFnPBKDF2,
+) {
+  // we derive a general Nostr secretKey (uint8array) and pubkey
+  const nostr = deriveKey('nostr', secretKey, saltKey, false, kdfFn) as DeriveKeyResult & {
     npub: `npub1${string}`;
     nsec: `nsec1${string}`;
     nrepo: `nrepo1${string}`;
@@ -114,8 +118,12 @@ export function deriveNostrKeys(secret, pubkey = randomBytes(32), kdf = defaultK
   };
 }
 
-export function deriveEthereumKeys(secret, pubkey = randomBytes(32), kdf = defaultKdfFnPBKDF2) {
-  const ethereum = deriveKey('ethereum', secret, pubkey, false, kdf);
+export function deriveEthereumKeys(
+  secretKey: Uint8Array | HexString,
+  saltKey = ed25519.getPublicKey(toBytes(secretKey)),
+  kdf = defaultKdfFnPBKDF2,
+) {
+  const ethereum = deriveKey('ethereum', secretKey, saltKey, false, kdf);
   ethereum.address = privateKeyToEthereumAddress(ethereum.privkey) as `0x${string}`;
   ethereum.pubkey = bytesToHex(
     secp256k1.getPublicKey(toBytes(ethereum.privkey), false),
@@ -124,14 +132,18 @@ export function deriveEthereumKeys(secret, pubkey = randomBytes(32), kdf = defau
   return ethereum;
 }
 
-export function deriveBitcoinKeys(secret: any, kdf = defaultKdfFnPBKDF2) {
+export function deriveBitcoinKeys(
+  secretKey: Uint8Array | HexString,
+  saltKey = ed25519.getPublicKey(toBytes(secretKey)),
+  kdf = defaultKdfFnPBKDF2,
+) {
   // doesn't matter that it's ed25519, we just need a salt "pubkey", a thing based on the secret
   // this salt-pubkey is used in specific way in the derivation process:
   // - the secretKey + bech32(prefix, saltPubkey) is used in KDF to generate userKey
   // - prefix in this function specifically is "bc" (in nostr it's "nostr", in ethereum it's "ethereum")
   // - this userKey + "{prefix} seedkey" is passed through HMAC-SHA256 to get the final "secret/entropy/mnemonic/seed"
-  const saltKey = ed25519.getPublicKey(secret);
-  return deriveKey('bc', secret, saltKey, true, kdf);
+  // const saltKey = ed25519.getPublicKey(secretKey);
+  return deriveKey('bc', secretKey, saltKey, true, kdf);
 }
 
 type DeriveKeyResult = {
@@ -143,13 +155,13 @@ type DeriveKeyResult = {
 };
 
 export function deriveKey(
-  prefix,
-  key,
-  pub,
+  prefix: string,
+  key: Uint8Array | HexString,
+  pub?: Uint8Array | HexString,
   isAddr = false,
   kdf = defaultKdfFnPBKDF2,
 ): DeriveKeyResult {
-  const salt = pub || randomBytes(32);
+  const salt = toBytes(pub || ed25519.getPublicKey(toBytes(key)));
   const bechaddy = bech32encode(prefix, salt);
   // the secretKey + bech32(prefix, saltPubkey) is used in KDF to generate userKey
   const usageKey = kdf(key, toBytes(bechaddy));
@@ -166,7 +178,7 @@ export function deriveKey(
   return { mnemonic, salt, privkey: bytesToHex(secret), pubkey: bytesToHex(pubkey), address };
 }
 
-export function deriveMnemonic(secret: Uint8Array | string, size = 32, wordlist_ = wordlist) {
+export function deriveMnemonic(secret: Uint8Array | HexString, size = 32, wordlist_ = wordlist) {
   // if hexstring, convert to bytes
   // if string (utf8), convert to bytes
   // if bytes, passthrough
