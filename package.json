@@ -1,6 +1,6 @@
 {
   "name": "cryptils",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "license": "MPL-2.0",
   "description": "Utilities around Master Password Algorithm (Spectre.app, by Maarten Billemont) and crypto, using Noble and Scure by Paul Miller. Stateless accounts & passwords, 2fa HOTP/TOTP, shamir secret sharing, crypto/bitcoin/nostr public and private keys, and more.",
   "author": "Charlike Mike Reagent <opensource@tunnckocore.com>",
@@ -36,7 +36,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "bun run build:aes && bun run build:age && bun run build:bech32encode && bun run build:derive && bun run build:ethereum && bun run build:index && bun run build:otp && bun run build:shamir && bun run build:utils",
+    "build": "run-s build:*",
+    "___build": "bun run build:aes && bun run build:age && bun run build:bech32encode && bun run build:derive && bun run build:ethereum && bun run build:index && bun run build:otp && bun run build:shamir && bun run build:utils",
     "build:aes": "bun build src/aes.ts --outdir dist --packages=external",
     "build:age": "bun build src/age.ts --outdir dist --packages=external",
     "build:bech32encode": "bun build src/bech32encode.ts --outdir dist --packages=external",
@@ -59,6 +60,7 @@
   "devDependencies": {
     "@types/bun": "latest",
     "eslint-config-tunnckocore": "^4.0.0",
+    "npm-run-all": "^4.1.5",
     "qrcode": "^1.5.4"
   },
   "peerDependencies": {

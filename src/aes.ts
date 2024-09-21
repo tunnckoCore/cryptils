@@ -9,7 +9,8 @@ export async function encryptWithSecret(
   key: SecretKey,
   salt?: Uint8Array,
 ) {
-  const secret = typeof key === 'string' ? toBytes(key).slice(1) : key;
+  const priv = toBytes(key);
+  const secret = priv.length === 33 ? priv.slice(1) : priv;
   const salt_ = salt ? toBytes(salt) : randomBytes(32);
   const cipher = gcm(secret, salt_);
 
