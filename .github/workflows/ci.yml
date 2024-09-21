@@ -17,6 +17,4 @@ jobs:
       # run any `bun` or `bunx` command
       - run: bun install
       - run: bun run build
-      - run: bun example-aes.ts
-      - run: bun example-core.ts
-      - run: bun example-otp.ts
+      - run: bun run test

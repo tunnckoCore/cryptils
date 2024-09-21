@@ -1,6 +1,6 @@
 {
   "name": "cryptils",
-  "version": "0.11.2",
+  "version": "0.12.0",
   "license": "MPL-2.0",
   "description": "Utilities around Master Password Algorithm (Spectre.app, by Maarten Billemont) and crypto, using Noble and Scure by Paul Miller. Stateless accounts & passwords, 2fa HOTP/TOTP, shamir secret sharing, crypto/bitcoin/nostr public and private keys, and more.",
   "author": "Charlike Mike Reagent <opensource@tunnckocore.com>",
@@ -37,6 +37,10 @@
   ],
   "scripts": {
     "build": "run-s build:*",
+    "test": "run-s test:*",
+    "test:aes": "bun example-aes.ts",
+    "test:otp": "bun example-otp.ts",
+    "test:derive": "bun example-derive-keys.ts",
     "___build": "bun run build:aes && bun run build:age && bun run build:bech32encode && bun run build:derive && bun run build:ethereum && bun run build:index && bun run build:otp && bun run build:shamir && bun run build:utils",
     "build:aes": "bun build src/aes.ts --outdir dist --packages=external",
     "build:age": "bun build src/age.ts --outdir dist --packages=external",

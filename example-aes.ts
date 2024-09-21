@@ -10,12 +10,12 @@ const account = spectreV4('usrname', 'foo pass bar', 'twt.com');
 // or try with random one
 const secret = randomBytes(32);
 
-console.log({ account });
+console.log({ account, secret });
 
-const encrypted = await encryptWithSecret(account.pass, account.secret);
+const encrypted = await encryptWithSecret(account.securepass, account.secret);
 const decrypted = await decryptWithSecret(encrypted, account.secret);
 
-console.log({ encrypted, decrypted, same: decrypted === account.pass });
+console.log({ encrypted, decrypted, same: decrypted === account.securepass });
 
 console.log(scrypt.name);
 console.log(pbkdf2.name);
