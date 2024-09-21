@@ -102,7 +102,7 @@ import {
   parseOtpSecret,
   validateHotp,
   validateTotp,
-} from 'cryptils';
+} from 'cryptils/otp';
 import qrcode from 'qrcode';
 
 // accepts secret uint8array, secret as base32 string, or hex string,
