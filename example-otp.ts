@@ -1,22 +1,19 @@
 import qrcode from 'qrcode';
 
 import {
-  generateBase32Secret,
-  getHotpToken,
+  getHotp,
+  getOtpSecret,
   getTokenUri,
-  getTotpToken,
-  validateHotpToken,
-  validateTotpToken,
+  getTotp,
+  validateHotp,
+  validateTotp,
 } from './src/otp.ts';
 
-// import { bytesToHex, randomBytes } from './src/utils.ts';
-
 async function printset(options) {
-  const secret = generateBase32Secret();
-  // const secret = 'XB2FZCEQFWUPEDQ6Y5CFT5KN';
+  const secret = getOtpSecret();
 
-  const totpToken = await getTotpToken(secret, options);
-  const hotpToken = await getHotpToken(secret, options);
+  const totpToken = getTotp(secret, options);
+  const hotpToken = getHotp(secret, options);
   const uri = getTokenUri(secret, options);
 
   console.log(await qrcode.toString(uri));
@@ -43,11 +40,11 @@ printset({
   issuer: 'issuer3',
 });
 
-const secret = generateBase32Secret();
-const token = await getTotpToken(secret);
-const valid = await validateTotpToken(secret, token);
+const secret = getOtpSecret();
+const totp = getTotp(secret, { algorithm: 'SHA1' });
+const valid = validateTotp(secret, totp);
 
-console.log({ secret, token, valid });
+console.log({ secret, totp, valid });
 
-const hotpToken = await getHotpToken(secret);
-console.log({ hotpToken, valid: await validateHotpToken(secret, hotpToken) });
+const hotp = getHotp(secret);
+console.log({ hotp, valid: validateHotp(secret, hotp) });
