@@ -57,54 +57,36 @@ deno add npm:cryptils
 ## Usage
 
 ```typescript
-import {
-  bech32encode,
-  deriveAccount,
-  deriveCryptoAccount,
-  deriveKeys,
-  randomBytes,
-  spectreV4,
-  splitKeyToShares,
-} from 'cryptils';
+import { deriveCryptoKeys, spectreV4 } from 'cryptils/derive';
 
-const usrName = 'wgw';
-const passwd = 'secret master password';
+// personal name (can be anything), master password, account name (or site url + handle)
+const wgw = spectreV4('some persona', 'fool master pawdy', 'twitter.com/wgw_eth');
+const keys = deriveCryptoKeys(wgw.secret);
 
-// Derive password for `wgw` user on `twitter.com` and `github.com`,
-const twitter = deriveAccount(usrName, passwd, 'twitter.com');
-const github = deriveAccount(usrName, passwd, 'github.com');
+console.log('privkey', bytesToHex(wgw.secret));
+console.log('wiggle account:', wgw);
+// => { secret: uint8array, persona: string, masterpass: string, account: string }
 
-// in addition to above, it uses the generated secret
-// to derive crypto keys like ethereum address, bitcoin keys and nostr keys
-const crypto_1 = deriveCryptoAccount(usrName, passwd, 'crypto.0');
-const crypto_2 = deriveCryptoAccount(usrName, passwd, 'crypto.1');
-const { secret: crypto_3_secret, ...crypto_3 } = spectreV4(usrName, passwd, 'crypto.2');
+console.log('crypto keys:', keys);
+// => { bitcoin, nostr, ethereum, litecoin, vertcoin }
+```
 
-// deriveKeys is used inside `deriveCryptoKeys`, it's standalone function
-const crypto_3_keys = deriveKeys(crypto_3_secret);
+or using separate functions, to save on computation
 
-// Using Shamir Secret Sharing, split the secret into 3 keys and 5 shares
-const crypto_3_keys_shares = await splitKeyToShares(crypto_3_secret, 3, 5);
+```typescript
+import { deriveBitcoinKeys, deriveEthereumKeys, deriveNostrKeys, spectreV4 } from 'cryptils/derive';
 
-const info = {
-  twitter,
-  github,
-  crypto_1,
-  crypto_2,
-  crypto_3: { ...crypto_3, keys: crypto_3_keys, shares: crypto_3_keys_shares },
-};
+const wgw = spectreV4('some persona', 'fool master pawdy', 'twitter.com/wgw_eth');
 
-console.log();
-console.log(JSON.stringify(info, null, 2));
-console.log();
+console.log('btc1', deriveBitcoinKeys(wgw.secret));
+console.log('btc2', deriveBitcoinKeys(randomBytes(32)));
+// => { mnemonic, salt, privkey, pubkey, address }
 
-const rndSecret = randomBytes(32);
-const otherKeys = deriveKeys(rndSecret);
-console.log('other keys:', otherKeys);
+console.log('eth', deriveEthereumKeys(wgw.secret));
+// => { mnemonic, salt, privkey, pubkey, address }
 
-// create Bitcoin bech32 bc1p address from a public key
-const bc1p = bech32encode('bc', otherKeys.pubkey, true);
-console.log('bc1p:', bc1p, bc1p === otherKeys.bitcoin);
+console.log('nostr', deriveNostrKeys(wgw.secret));
+// => { mnemonic salt, privkey, pubkey, npub, nsec, nrepo }
 ```
 
 ## Docs
@@ -113,24 +95,32 @@ console.log('bc1p:', bc1p, bc1p === otherKeys.bitcoin);
 
 ```typescript
 import {
-  generateBase32Secret,
-  getHotpToken,
+  getHotp,
+  getOtpSecret,
   getTokenUri,
-  getTotpToken,
-  validateHotpToken,
-  validateToken,
-  validateTotpToken,
+  getTotp,
+  parseOtpSecret,
+  validateHotp,
+  validateTotp,
 } from 'cryptils';
 import qrcode from 'qrcode';
 
-const secret = generateBase32Secret();
-const token = await getTotpToken(secret);
-const valid = await validateTotpToken(secret, token);
+// accepts secret uint8array, secret as base32 string, or hex string,
+// if not passed anything it will generate random secret
+const secret = getOtpSecret();
+const token = await getTotp(secret, { digits: 8, algorithm: 'SHA-512' });
+const valid = await validateTotp(secret, token, { digits: 8, algorithm: 'SHA-512' });
 
 console.log({ secret, token, valid });
 
-const hotpToken = await getHotpToken(secret);
-console.log({ hotpToken, valid: await validateHotpToken(secret, hotpToken) });
+const hotp = await getHotp(secret);
+console.log({ hotp, valid: await validateHotp(secret, hotpToken) });
+
+const parsedSecret = parseOtpSecret('5DXDAFF6BALL25TOYZXJHDCW4LY4OWTH');
+const uri = getTokenUri(secret, { issuer: 'MyApp', username: 'barry' });
+cosole.log({ parsedSecret, uri });
+
+console.log(await qrcode.toString(uri));
 ```
 
 ### Example with AES-256-GCM
