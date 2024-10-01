@@ -1,5 +1,10 @@
 import { ed25519, hashToCurve as ed25519hashToCurve } from '@noble/curves/ed25519';
-import { schnorr, secp256k1, hashToCurve as secp256k1hashToCurve } from '@noble/curves/secp256k1';
+import {
+  schnorr,
+  secp256k1,
+  hashToCurve as secp256k1hashToCurve,
+  encodeToCurve as secpkEncodeToCurve,
+} from '@noble/curves/secp256k1';
 import { hmac } from '@noble/hashes/hmac';
 import { pbkdf2 } from '@noble/hashes/pbkdf2';
 import { scrypt } from '@noble/hashes/scrypt';
@@ -82,12 +87,22 @@ export function deriveCryptoKeys(
   saltKey = ed25519.getPublicKey(toBytes(secretKey)),
   kdfFn = defaultKdfFnPBKDF2,
 ) {
+  const ltc = deriveKey('ltc', secretKey, saltKey, kdfFn);
+  const ltcPrivkey = bytesToHex(ltc.secret);
+  const ltcPubkey = bytesToHex(schnorr.getPublicKey(toBytes(ltcPrivkey))) as HexString;
+  const ltcAddress = bech32encode('ltc', ltcPubkey, true);
+
+  const vtc = deriveKey('vtc', secretKey, saltKey, kdfFn);
+  const vtcPrivkey = bytesToHex(vtc.secret);
+  const vtcPubkey = bytesToHex(schnorr.getPublicKey(toBytes(vtcPrivkey))) as HexString;
+  const vtcAddress = bech32encode('vtc', ltcPubkey, true);
+
   return {
     nostr: deriveNostrKeys(secretKey, saltKey, kdfFn),
     ethereum: deriveEthereumKeys(secretKey, saltKey, kdfFn),
     bitcoin: deriveBitcoinKeys(secretKey, saltKey, kdfFn),
-    litecoin: deriveKey('ltc', secretKey, saltKey, true, kdfFn),
-    vertcoin: deriveKey('vtc', secretKey, saltKey, true, kdfFn),
+    litecoin: { ...ltc, privkey: ltcPrivkey, pubkey: ltcPubkey, address: ltcAddress },
+    vertcoin: { ...vtc, privkey: vtcPrivkey, pubkey: vtcPubkey, address: vtcAddress },
   };
 }
 
@@ -99,7 +114,7 @@ export function deriveNostrKeys(
   // we derive a general Nostr secretKey (uint8array) and pubkey
   const nostr = deriveKey('nostr', secretKey, saltKey, kdfFn);
 
-  // @ts-ixgnore the `toRawBytes` exists
+  // @ts-ixgnore the `toRawBytes` DOES exists
   const ed25519curveSecret = ed25519hashToCurve(nostr.secret).toRawBytes();
 
   // convert a generated random secret, to a specific ed25519 curve point
@@ -129,11 +144,17 @@ export function deriveEthereumKeys(
 ) {
   const ethereum = deriveKey('ethereum', secretKey, saltKey, kdf);
 
-  // @ts-iXXgnore the `toRawBytes` exists
-  const secp25k1curveSecret = secp256k1hashToCurve(ethereum.secret).toRawBytes();
+  // @ts-iXXgnore the `toRawBytes` DOES exists - seems like we don't need such convert?
+  // const secp25k1curveSecret = secp256k1hashToCurve(ethereum.secret).toRawBytes();
+  // const secp25k1curveSecret = secpkEncodeToCurve(ethereum.secret);
 
-  // convert a generated random secret, to a specific secp256k1 curve point
-  const privkey = bytesToHex(secp25k1curveSecret);
+  // console.log({ secp25k1curveSecret }, 'bruh', secp25k1curveSecret.toRawBytes());
+  // // convert a generated random secret, to a specific secp256k1 curve point
+  // const privkey = bytesToHex(secp25k1curveSecret.toRawBytes());
+  // console.log({ privkey });
+
+  const privkey = bytesToHex(ethereum.secret);
+
   const address = privateKeyToEthereumAddress(privkey) as `0x${string}`;
   const pubkey = bytesToHex(secp256k1.getPublicKey(toBytes(privkey), true)) as HexString;
   const pubkeyUncompressed = bytesToHex(
@@ -161,7 +182,7 @@ export function deriveBitcoinKeys(
   // const saltKey = ed25519.getPublicKey(secretKey);
   const bitcoin = deriveKey('bc', secretKey, saltKey, kdf);
 
-  // @ts-iXXgnore the `toRawBytes` exists
+  // @ts-iXXgnore the `toRawBytes` DOES exists
   // do we need to convert to secp256k1 eventho we use/need schnorr? - seems like we don't
   // const secp25k1curveSecret = secp256k1hashToCurve(bitcoin.secret).toRawBytes();
   // const privkey = bytesToHex(secp25k1curveSecret);

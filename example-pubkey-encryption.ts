@@ -1,13 +1,17 @@
 import { bytesToUtf8 } from '@noble/ciphers/utils';
 import { ed25519 } from '@noble/curves/ed25519';
-import { base64urlnopad } from '@scure/base';
+import { secp256k1 } from '@noble/curves/secp256k1';
+import { hexToBytes } from '@noble/hashes/utils';
 
-import { deriveBitcoinKeys, deriveNostrKeys, spectreV4 } from './src/derive.ts';
+import { deriveBitcoinKeys, deriveEthereumKeys, deriveNostrKeys, spectreV4 } from './src/derive.ts';
 import { convertSchnorrTo, decryptWithPrivkey, encryptToPubkey } from './src/pke.ts';
+import { toBytes } from './src/utils.ts';
 
 // recommended `iterations` is >= 2**18, this is only for faster example run
 const aliceRoot = spectreV4('alice', 'foo bar', 'crypto.0', { iterations: 2 ** 10 });
 const barryRoot = spectreV4('barry', 'quxie zazzy', 'crypto.0', { iterations: 2 ** 10 });
+
+console.log({ aliceRoot, barryRoot });
 
 const aliceBitcoin = deriveBitcoinKeys(aliceRoot.secret);
 const barryBitcoin = deriveBitcoinKeys(barryRoot.secret);
@@ -37,7 +41,15 @@ const barryNostr = deriveNostrKeys(barryRoot.secret);
 
 console.log({ aliceNostr, barryNostr });
 
-const encr2 = await encryptToPubkey(ed25519, message, aliceNostr.privkey, barryNostr.pubkey);
-const decr2 = await decryptWithPrivkey(ed25519, encr2, barryNostr.privkey);
+const nostrEncr = await encryptToPubkey(ed25519, message, aliceNostr.privkey, barryNostr.pubkey);
+const nostrDecr = await decryptWithPrivkey(ed25519, nostrEncr, barryNostr.privkey);
 
-console.log({ encr2, decr2: bytesToUtf8(decr2) });
+console.log({ nostrEncr, nostrDec: bytesToUtf8(nostrDecr) });
+
+const aliceEth = deriveEthereumKeys(aliceRoot.secret);
+const barryEth = deriveEthereumKeys(barryRoot.secret);
+
+const ethEncrypted = await encryptToPubkey(secp256k1, message, aliceEth.privkey, barryEth.pubkey);
+const ethDecrypted = await decryptWithPrivkey(secp256k1, ethEncrypted, barryEth.privkey);
+
+console.log({ ethEncrypted, ethDecrypted: bytesToUtf8(ethDecrypted) });
