@@ -23,6 +23,7 @@
     "./derive": "./dist/derive.js",
     "./ethereum": "./dist/ethereum.js",
     "./otp": "./dist/otp.js",
+    "./pke": "./dist/pke.js",
     "./shamir": "./dist/shamir.js",
     "./types": "./src/types.ts",
     "./utils": "./dist/utils.js",
@@ -49,6 +50,7 @@
     "build:ethereum": "bun build src/ethereum.ts --outdir dist --packages=external",
     "build:index": "bun build src/index.ts --outdir dist --packages=external",
     "build:otp": "bun build src/otp.ts --outdir dist --packages=external",
+    "build:pke": "bun build src/pke.ts --outdir dist --packages=external",
     "build:shamir": "bun build src/shamir.ts --outdir dist --packages=external",
     "build:utils": "bun build src/utils.ts --outdir dist --packages=external"
   },
