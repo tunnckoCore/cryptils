@@ -4,6 +4,7 @@ export * from './bech32encode.ts';
 export * from './derive.ts';
 export * from './ethereum.ts';
 export * from './otp.ts';
+export * from './pke.ts';
 export * from './shamir.ts';
 export * from './utils.ts';
 export * as types from './types.ts';

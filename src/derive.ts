@@ -1,5 +1,5 @@
-import { ed25519 } from '@noble/curves/ed25519';
-import { schnorr, secp256k1 } from '@noble/curves/secp256k1';
+import { ed25519, hashToCurve as ed25519hashToCurve } from '@noble/curves/ed25519';
+import { schnorr, secp256k1, hashToCurve as secp256k1hashToCurve } from '@noble/curves/secp256k1';
 import { hmac } from '@noble/hashes/hmac';
 import { pbkdf2 } from '@noble/hashes/pbkdf2';
 import { scrypt } from '@noble/hashes/scrypt';
@@ -11,7 +11,7 @@ import { mask as secureMask } from 'micro-key-producer/password.js';
 
 import { bech32encode } from './bech32encode.ts';
 import { privateKeyToEthereumAddress } from './ethereum.ts';
-import type { HexString, SpectreOptions, SpectreResult } from './types.ts';
+import type { DeriveKeyResult, HexString, SpectreOptions, SpectreResult } from './types.ts';
 import { toBytes } from './utils.ts';
 
 // Master Password Algorithm (by Maarten Billemont),
@@ -97,24 +97,25 @@ export function deriveNostrKeys(
   kdfFn = defaultKdfFnPBKDF2,
 ) {
   // we derive a general Nostr secretKey (uint8array) and pubkey
-  const nostr = deriveKey('nostr', secretKey, saltKey, false, kdfFn) as DeriveKeyResult & {
-    npub: `npub1${string}`;
-    nsec: `nsec1${string}`;
-    nrepo: `nrepo1${string}`;
-  };
+  const nostr = deriveKey('nostr', secretKey, saltKey, kdfFn);
 
-  // @ts-ignore bruh
-  delete nostr.address;
+  // @ts-ixgnore the `toRawBytes` exists
+  const ed25519curveSecret = ed25519hashToCurve(nostr.secret).toRawBytes();
+
+  // convert a generated random secret, to a specific ed25519 curve point
+  const privkey = bytesToHex(ed25519curveSecret);
 
   // the returned pubkey from deriveKey is schnorr one, make sure it's ed25519
-  nostr.pubkey = bytesToHex(ed25519.getPublicKey(nostr.privkey));
+  const pubkey = bytesToHex(ed25519.getPublicKey(privkey));
 
   // from derived privkey and pubkey, we derive nostr-specific addresses for nsec, npub and nrepo
-  nostr.npub = bech32encode('npub', nostr.pubkey) as (typeof nostr)['npub'];
-  nostr.nsec = bech32encode('nsec', nostr.privkey) as (typeof nostr)['nsec'];
-  nostr.nrepo = bech32encode('nrepo', nostr.pubkey) as (typeof nostr)['nrepo'];
+  const npub = bech32encode('npub', pubkey);
+  const nsec = bech32encode('nsec', privkey);
+  const nrepo = bech32encode('nrepo', pubkey);
 
-  return nostr as DeriveKeyResult & {
+  return { ...nostr, privkey, pubkey, npub, nsec, nrepo } as DeriveKeyResult & {
+    privkey: HexString;
+    pubkey: HexString;
     npub: `npub1${string}`;
     nsec: `nsec1${string}`;
     nrepo: `nrepo1${string}`;
@@ -126,13 +127,25 @@ export function deriveEthereumKeys(
   saltKey = ed25519.getPublicKey(toBytes(secretKey)),
   kdf = defaultKdfFnPBKDF2,
 ) {
-  const ethereum = deriveKey('ethereum', secretKey, saltKey, false, kdf);
-  ethereum.address = privateKeyToEthereumAddress(ethereum.privkey) as `0x${string}`;
-  ethereum.pubkey = bytesToHex(
-    secp256k1.getPublicKey(toBytes(ethereum.privkey), false),
+  const ethereum = deriveKey('ethereum', secretKey, saltKey, kdf);
+
+  // @ts-iXXgnore the `toRawBytes` exists
+  const secp25k1curveSecret = secp256k1hashToCurve(ethereum.secret).toRawBytes();
+
+  // convert a generated random secret, to a specific secp256k1 curve point
+  const privkey = bytesToHex(secp25k1curveSecret);
+  const address = privateKeyToEthereumAddress(privkey) as `0x${string}`;
+  const pubkey = bytesToHex(secp256k1.getPublicKey(toBytes(privkey), true)) as HexString;
+  const pubkeyUncompressed = bytesToHex(
+    secp256k1.getPublicKey(toBytes(privkey), false),
   ) as HexString;
 
-  return ethereum;
+  return { privkey, pubkey, pubkeyUncompressed, address } as DeriveKeyResult & {
+    privkey: HexString;
+    pubkey: HexString;
+    pubkeyUncompressed: HexString;
+    address: `0x${string}`;
+  };
 }
 
 export function deriveBitcoinKeys(
@@ -146,22 +159,28 @@ export function deriveBitcoinKeys(
   // - prefix in this function specifically is "bc" (in nostr it's "nostr", in ethereum it's "ethereum")
   // - this userKey + "{prefix} seedkey" is passed through HMAC-SHA256 to get the final "secret/entropy/mnemonic/seed"
   // const saltKey = ed25519.getPublicKey(secretKey);
-  return deriveKey('bc', secretKey, saltKey, true, kdf);
-}
+  const bitcoin = deriveKey('bc', secretKey, saltKey, kdf);
 
-type DeriveKeyResult = {
-  mnemonic: string;
-  salt: Uint8Array;
-  pubkey: HexString;
-  privkey: HexString;
-  address: string;
-};
+  // @ts-iXXgnore the `toRawBytes` exists
+  // do we need to convert to secp256k1 eventho we use/need schnorr? - seems like we don't
+  // const secp25k1curveSecret = secp256k1hashToCurve(bitcoin.secret).toRawBytes();
+  // const privkey = bytesToHex(secp25k1curveSecret);
+
+  const privkey = bytesToHex(bitcoin.secret);
+  const pubkey = bytesToHex(schnorr.getPublicKey(toBytes(privkey))) as HexString;
+  const address = bech32encode('bc', pubkey, true);
+
+  return { ...bitcoin, privkey, pubkey, address } as DeriveKeyResult & {
+    privkey: HexString;
+    pubkey: HexString;
+    address: `0x${string}`;
+  };
+}
 
 export function deriveKey(
   prefix: string,
   key: Uint8Array | HexString,
   pub?: Uint8Array | HexString,
-  isAddr = false,
   kdf = defaultKdfFnPBKDF2,
 ): DeriveKeyResult {
   const salt = toBytes(pub || ed25519.getPublicKey(toBytes(key)));
@@ -174,11 +193,7 @@ export function deriveKey(
   // then we derive the mnemonic from that secret
   const mnemonic = entropyToMnemonic(secret, wordlist);
 
-  // in bitcoin, litecoin, vertcoin case it's schnor; for nostr and ethereum these 2 are overwritten anyway
-  const pubkey = schnorr.getPublicKey(secret);
-  const address = bech32encode(prefix, pubkey, isAddr);
-
-  return { mnemonic, salt, privkey: bytesToHex(secret), pubkey: bytesToHex(pubkey), address };
+  return { mnemonic, salt, secret };
 }
 
 export function deriveMnemonic(secret: Uint8Array | HexString, size = 32, wordlist_ = wordlist) {

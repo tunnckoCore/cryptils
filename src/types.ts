@@ -6,6 +6,12 @@ declare interface KdfFn {
   (key: HashesInput, salt: HashesInput, opts: ScryptOpts | Pbkdf2Opt | any): Uint8Array;
 }
 
+export type DeriveKeyResult = {
+  mnemonic: string;
+  salt: Uint8Array;
+  secret: Uint8Array;
+};
+
 export type SpectreOptions = {
   template?: string;
   hash?: any;

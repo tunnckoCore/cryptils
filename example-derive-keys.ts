@@ -3,7 +3,6 @@ import { bytesToHex, randomBytes } from '@noble/hashes/utils';
 
 import {
   deriveBitcoinKeys,
-  deriveCryptoAccount,
   deriveCryptoKeys,
   deriveEthereumKeys,
   deriveKey,
@@ -25,15 +24,15 @@ const keys = deriveCryptoKeys(wgw.secret);
 
 console.log({ wgw, keys }, bytesToHex(wgw.secret));
 
-console.log('encrypted btc', await encryptWithSecret(keys.bitcoin.privkey, wgw.secret));
+console.log('encrypt with btc secret', await encryptWithSecret(keys.bitcoin.privkey, wgw.secret));
 
-// console.log('btc1', deriveBitcoinKeys(randomBytes(32)));
-// console.log('btc2', deriveBitcoinKeys(randomBytes(32)));
+console.log('btc1', deriveBitcoinKeys(randomBytes(32)));
+console.log('btc2', deriveBitcoinKeys(randomBytes(32)));
 // console.log('btc3', deriveBitcoinKeys(randomBytes(32)));
 // console.log('btc4', deriveBitcoinKeys(randomBytes(32)));
 
-// const tempkey = ed25519.getPublicKey(result.secret);
-// console.log('ethereumxxxxxxx:', deriveEthereumKeys(result.secret, tempkey));
-// console.log('bitcoin:', deriveKey('bc', result.secret, tempkey));
-// console.log('nostr:', deriveNostrKeys(result.secret, tempkey));
+// const saltkey = ed25519.getPublicKey(result.secret);
+// console.log('ethereumxxxxxxx:', deriveEthereumKeys(result.secret, saltkey));
+// console.log('bitcoin:', deriveKey('bc', result.secret, saltkey));
+// console.log('nostr:', deriveNostrKeys(result.secret, saltkey));
 // console.log({ result });
