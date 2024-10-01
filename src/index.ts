@@ -1,5 +1,6 @@
 export * from './aes.ts';
 export * from './age.ts';
+export * from './bech32encode.ts';
 export * from './derive.ts';
 export * from './ethereum.ts';
 export * from './otp.ts';

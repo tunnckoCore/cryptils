@@ -106,6 +106,9 @@ export function deriveNostrKeys(
   // @ts-ignore bruh
   delete nostr.address;
 
+  // the returned pubkey from deriveKey is schnorr one, make sure it's ed25519
+  nostr.pubkey = bytesToHex(ed25519.getPublicKey(nostr.privkey));
+
   // from derived privkey and pubkey, we derive nostr-specific addresses for nsec, npub and nrepo
   nostr.npub = bech32encode('npub', nostr.pubkey) as (typeof nostr)['npub'];
   nostr.nsec = bech32encode('nsec', nostr.privkey) as (typeof nostr)['nsec'];
