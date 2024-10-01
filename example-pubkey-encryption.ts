@@ -49,6 +49,8 @@ console.log({ nostrEncr, nostrDec: bytesToUtf8(nostrDecr) });
 const aliceEth = deriveEthereumKeys(aliceRoot.secret);
 const barryEth = deriveEthereumKeys(barryRoot.secret);
 
+console.log({ aliceEth, barryEth });
+
 const ethEncrypted = await encryptToPubkey(secp256k1, message, aliceEth.privkey, barryEth.pubkey);
 const ethDecrypted = await decryptWithPrivkey(secp256k1, ethEncrypted, barryEth.privkey);
 

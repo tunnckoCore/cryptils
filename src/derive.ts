@@ -161,7 +161,7 @@ export function deriveEthereumKeys(
     secp256k1.getPublicKey(toBytes(privkey), false),
   ) as HexString;
 
-  return { privkey, pubkey, pubkeyUncompressed, address } as DeriveKeyResult & {
+  return { ...ethereum, privkey, pubkey, pubkeyUncompressed, address } as DeriveKeyResult & {
     privkey: HexString;
     pubkey: HexString;
     pubkeyUncompressed: HexString;
